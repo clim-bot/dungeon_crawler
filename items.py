@@ -1,7 +1,7 @@
 import pygame
 
 class Item(pygame.sprite.Sprite):
-    def __init__(self, x, y, item_type, animation_list):
+    def __init__(self, x, y, item_type, animation_list, dummy_coin = False):
         pygame.sprite.Sprite.__init__(self)
         self.item_type = item_type # 0: coin, 1: health potion
         self.animation_list = animation_list
@@ -10,8 +10,16 @@ class Item(pygame.sprite.Sprite):
         self.image = self.animation_list[self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+        self.dummy_coin = dummy_coin
 
-    def update(self, player):
+    def update(self,screen_scroll, player):
+        # doesn't apply to the dummy coin that is always displayed at the top of the screen
+        if not self.dummy_coin:
+            # repostion based on screen scroll
+            self.rect.x += screen_scroll[0]
+            self.rect.y += screen_scroll[1]
+
+
         # check to see if the player has picked up the item
         if self.rect.colliderect(player.rect):
             # coin collected
