@@ -123,12 +123,6 @@ with open(f"levels/level{level}_data.csv", newline='') as csvfile:
 world = World()
 world.process_data(world_data, tile_list, item_images, mob_animations)
 
-# def draw_grid():
-#     for x in range(30):
-#         pygame.draw.line(screen, constants.WHITE, (x * constants.TILE_SIZE, 0), (x * constants.TILE_SIZE, constants.SCREEN_HEIGHT))
-#         pygame.draw.line(screen, constants.WHITE, (0, x * constants.TILE_SIZE), (constants.SCREEN_WIDTH, x * constants.TILE_SIZE))
-                        
-
 # damage text class
 class DamageText(pygame.sprite.Sprite):
     def __init__(self, x, y, damage, color):
@@ -179,9 +173,6 @@ while run:
     # fill screen with white
     screen.fill(constants.BG)
 
-    # draw grid
-    # draw_grid()
-
     # calfulate player movement
     dx = 0
     dy = 0
@@ -200,14 +191,14 @@ while run:
     # update all objects
     world.update(screen_scroll)
     for enemy in enemy_list:
-        enemy.ai(screen_scroll)
+        enemy.ai(player, world.obstacle_tiles, screen_scroll)
         enemy.update()
     player.update()
     arrow = bow.update(player)
     if arrow:
         arrow_group.add(arrow)
     for arrow in arrow_group:
-        damage, damage_pos = arrow.update(screen_scroll, enemy_list)
+        damage, damage_pos = arrow.update(screen_scroll, world.obstacle_tiles, enemy_list)
         if damage:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), constants.RED)
             damage_text_group.add(damage_text)
