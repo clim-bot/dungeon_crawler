@@ -1,0 +1,82 @@
+import pygame
+import math
+import constants
+
+class Character():
+    def __init__(self, x, y, health,  mob_animations, char_type):
+        self.char_type = char_type
+        self.score = 0
+        self.flip = False
+        self.animation_list = mob_animations[char_type]
+        self.frame_index = 0
+        self.action = 0 # 0:idle, 1:run
+        self.update_time = pygame.time.get_ticks()
+        self.running = False
+        self.health = health
+        self.alive = True
+
+        # load images
+        self.image = self.animation_list[self.action][self.frame_index]
+        self.rect = pygame.Rect(0, 0, constants.TILE_SIZE, constants.TILE_SIZE)
+        self.rect.center = (x, y)
+
+    def move(self, dx, dy):
+        self.running = False
+
+        if dx != 0 or dy != 0:
+            self.running = True
+
+        # update rectangle position
+        if dx < 0:
+            self.flip = True
+        if dx > 0:
+            self.flip = False
+
+        # control diagonal speed
+        if dx != 0 and dy != 0:
+            dx = dx * (math.sqrt(2) / 2)
+            dy = dy * (math.sqrt(2) / 2)
+        
+        self.rect.x += dx
+        self.rect.y += dy
+
+    def update_action(self, new_action):
+        # check if the new action is different to the previous one
+        if new_action != self.action:
+            self.action = new_action
+            # update animation settings
+            self.frame_index = 0
+            self.update_time = pygame.time.get_ticks()
+
+    def update(self):
+        # check if the character has died
+        if self.health <= 0:
+            self.health= 0
+            self.alive = False
+
+        # check what action the character is doing
+        if self.running == True:
+            self.update_action(1) # 1:run
+        else:
+            self.update_action(0) # 0:idle
+
+        # update animation
+        animation_cooldown = 70
+        # handle animation
+        # update image
+        self.image = self.animation_list[self.action][self.frame_index]
+        # check if enough time has passed since the last update
+        if pygame.time.get_ticks() - self.update_time > animation_cooldown:
+            self.update_time = pygame.time.get_ticks()
+            self.frame_index += 1
+        # if the animation has run out the reset back to the start
+        if self.frame_index >= len(self.animation_list[self.action]):
+            self.frame_index = 0
+
+    def draw(self, surface):
+        flip_image = pygame.transform.flip(self.image, self.flip, False)
+        if self.char_type == 0:
+            surface.blit(flip_image, (self.rect.x - 12, self.rect.y - constants.SCALE * constants.OFFSET))
+        else:
+            surface.blit(flip_image, self.rect)
+        pygame.draw.rect(surface, (constants.RED), self.rect, 1)
