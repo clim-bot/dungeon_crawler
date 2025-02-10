@@ -1,5 +1,6 @@
 import pygame
 import math
+import weapon
 import constants
 
 
@@ -18,6 +19,7 @@ class Character():
         self.alive = True
         self.hit = False
         self.last_hit = pygame.time.get_ticks()
+        self.last_attack = pygame.time.get_ticks()
         self.stunned = False
 
         # load images
@@ -25,8 +27,9 @@ class Character():
         self.rect = pygame.Rect(0, 0, constants.TILE_SIZE * size, constants.TILE_SIZE * size)
         self.rect.center = (x, y)
 
-    def move(self, dx, dy, obstacle_tiles):
+    def move(self, dx, dy, obstacle_tiles, exit_tile = None):
         screen_scroll = [0, 0]
+        level_complete = False
         self.running = False
 
         if dx != 0 or dy != 0:
@@ -65,6 +68,13 @@ class Character():
 
         # update scroll based on player position
         if self.char_type == 0:
+            # check if the player has reached the exit tile
+            if exit_tile[1].colliderect(self.rect):
+                # ensure player is close to the center of the exit tile
+                exit_dist = math.sqrt(((self.rect.centerx - exit_tile[1].centerx) ** 2) + ((self.rect.centery - exit_tile[1].centery) ** 2))
+                if exit_dist < 20:
+                    level_complete = True
+
             # move camera left and right
             if self.rect.right > (constants.SCREEN_WIDTH - constants.SCROLL_THRESH):
                 screen_scroll[0] = (constants.SCREEN_WIDTH - constants.SCROLL_THRESH) - self.rect.right
@@ -81,13 +91,14 @@ class Character():
                 screen_scroll[1] = constants.SCROLL_THRESH - self.rect.top
                 self.rect.top = constants.SCROLL_THRESH
         
-        return screen_scroll
+        return screen_scroll, level_complete
     
-    def ai(self, player, obstacle_tiles, screen_scroll):
+    def ai(self, player, obstacle_tiles, screen_scroll, fireball_image):
         clipped_line = ()
         stun_cooldown = 100
         ai_dx = 0
         ai_dy = 0
+        fireball = None
 
         # repostion the mobs based on screen scroll
         self.rect.x += screen_scroll[0]
@@ -125,6 +136,13 @@ class Character():
                     player.health -= 10
                     player.hit = True
                     player.last_hit = pygame.time.get_ticks()
+                # boss enemies shoot fireballs
+                fireball_cooldown = 700
+                if self.boss:
+                    if dist < 500:
+                        if pygame.time.get_ticks() - self.last_attack >= fireball_cooldown:
+                            fireball = weapon.Fireball(fireball_image, self.rect.centerx, self.rect.centery, player.rect.centerx, player.rect.centery)
+                            self.last_attack = pygame.time.get_ticks()
 
             # check if the enemy is hit
             if self.hit == True:
@@ -136,6 +154,8 @@ class Character():
 
             if (pygame.time.get_ticks() - self.last_hit > stun_cooldown):
                 self.stunned = False
+
+            return fireball
 
     def update_action(self, new_action):
         # check if the new action is different to the previous one
@@ -182,4 +202,4 @@ class Character():
             surface.blit(flip_image, (self.rect.x, self.rect.y - constants.SCALE * constants.OFFSET))
         else:
             surface.blit(flip_image, self.rect)
-        pygame.draw.rect(surface, (constants.RED), self.rect, 1)
+        # pygame.draw.rect(surface, (constants.RED), self.rect, 1)

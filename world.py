@@ -46,11 +46,9 @@ class World():
                     self.charcter_list.append(enemy)
                     tile_data[0] = tile_list[0]
                 elif tile == 17:
-                    boss = Character(image_x, image_y, 200, mob_animations, 1, True, 2)
+                    boss = Character(image_x, image_y, 200, mob_animations, 6, True, 2)
                     self.charcter_list.append(boss)
                     tile_data[0] = tile_list[0]
-
-
 
                 # add image data to main tile list
                 if tile >= 0:
