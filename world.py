@@ -10,7 +10,7 @@ class World():
         self.exit_tile = None
         self.item_list = []
         self.player = None
-        self.charcter_list = []
+        self.character_list = []
 
     def process_data(self, data, tile_list, item_images, mob_animations):
         self.level_length = len(data)
@@ -38,16 +38,16 @@ class World():
                     self.item_list.append(potion)
                     tile_data[0] = tile_list[0]
                 elif tile == 11:
-                    player = Character(image_x, image_y, 10, mob_animations, 0, False, 1)
+                    player = Character(image_x, image_y, 100, mob_animations, 0, False, 1)
                     self.player = player
                     tile_data[0] = tile_list[0]
                 elif tile >= 12 and tile <= 16:
                     enemy = Character(image_x, image_y, 100, mob_animations, tile - 11, False, 1)
-                    self.charcter_list.append(enemy)
+                    self.character_list.append(enemy)
                     tile_data[0] = tile_list[0]
                 elif tile == 17:
                     boss = Character(image_x, image_y, 200, mob_animations, 6, True, 2)
-                    self.charcter_list.append(boss)
+                    self.character_list.append(boss)
                     tile_data[0] = tile_list[0]
 
                 # add image data to main tile list
